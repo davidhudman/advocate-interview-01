@@ -1,5 +1,4 @@
 import express from 'express';
-import db from '../db';
 import knex from 'knex';
 import knexConfig from '../../knexfile';
 

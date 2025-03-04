@@ -158,7 +158,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Run tests
   document.getElementById("runTests").addEventListener("click", async () => {
     try {
-      testResults.innerHTML = "<p>Running tests...</p>";
+      // Replace simple text with a progress bar
+      testResults.innerHTML = `
+        <p>Running tests...</p>
+        <div class="progress-container">
+          <div class="progress-bar"></div>
+        </div>
+      `;
 
       const response = await fetch(`${backendUrl}/run-tests`, {
         method: "POST",

@@ -1,5 +1,4 @@
 import db from '../src/db';
-import knexConfig from '../knexfile';
 import { Knex } from 'knex';
 
 let knex: Knex;
