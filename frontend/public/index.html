@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Express TypeScript API - Test Results</title>
+    <link rel="stylesheet" href="../src/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Express TypeScript API</h1>
+      <div class="actions">
+        <div class="theme-switch">
+          <label class="switch">
+            <input type="checkbox" id="themeToggle" />
+            <span class="slider round"></span>
+          </label>
+          <span class="theme-label">Dark Mode</span>
+        </div>
+        <button id="runTests">Run Tests</button>
+        <button id="checkHealth">Check Health</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="healthSection">
+        <h2>Health Status</h2>
+        <div id="healthResult" class="result-panel">
+          <p>Click "Check Health" to see the API health status</p>
+        </div>
+      </section>
+
+      <section id="testSection">
+        <h2>Test Results</h2>
+
+        <!-- New: Test summary and filter controls -->
+        <div id="testControls" class="test-controls">
+          <div id="testSummary" class="test-summary"></div>
+          <div class="test-filters">
+            <input type="text" id="testSearch" placeholder="Filter tests..." />
+            <select id="testStatusFilter">
+              <option value="all">All Tests</option>
+              <option value="passed">Passed Only</option>
+              <option value="failed">Failed Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="testResults" class="result-panel">
+          <p>Click "Run Tests" to execute the test suite</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="../src/app.js"></script>
+  </body>
+</html>
