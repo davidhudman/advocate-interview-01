@@ -19,14 +19,26 @@
         </div>
         <button id="runTests">Run Tests</button>
         <button id="checkHealth">Check Health</button>
+        <button id="viewDbInfo">DB JSON</button>
+
+        <button id="viewAllDb">All DB tables</button>
+        <button id="viewProdDb">Prod DB table</button>
+        <button id="viewTestDb">Test DB table</button>
+        <div class="db-actions"></div>
       </div>
     </header>
 
     <main>
-      <section id="healthSection">
-        <h2>Health Status</h2>
-        <div id="healthResult" class="result-panel">
-          <p>Click "Check Health" to see the API health status</p>
+      <!-- Add a new section after the test section -->
+      <section id="databaseSection">
+        <h2>Database Viewer</h2>
+        <div class="db-controls">
+          <button id="showProdDb">Show Prod Database</button>
+          <button id="showTestDb">Show Test Database</button>
+          <button id="hideDbView">Hide Database View</button>
+        </div>
+        <div id="dbViewerContent" class="result-panel">
+          <p>Click one of the database buttons to view table data</p>
         </div>
       </section>
 
@@ -48,6 +60,13 @@
 
         <div id="testResults" class="result-panel">
           <p>Click "Run Tests" to execute the test suite</p>
+        </div>
+      </section>
+
+      <section id="healthSection">
+        <h2>Health Status</h2>
+        <div id="healthResult" class="result-panel">
+          <p>Click "Check Health" to see the API health status</p>
         </div>
       </section>
     </main>

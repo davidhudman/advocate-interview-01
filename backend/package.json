@@ -8,7 +8,8 @@
     "test": "jest --json --outputFile=../frontend/public/test-results.json",
     "test:watch": "jest --watch",
     "lint": "eslint . --ext .ts",
-    "format": "prettier --write \"**/*.{ts,js,json}\""
+    "format": "prettier --write \"**/*.{ts,js,json}\"",
+    "setup-db": "ts-node src/scripts/setup-db.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

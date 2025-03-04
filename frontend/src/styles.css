@@ -21,6 +21,10 @@
   --heading-color: #2d3748;
   --subheading-color: #4a5568;
   --shadow-color: rgba(0, 0, 0, 0.1);
+  --bg-primary: #fff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  --border-color: #dee2e6;
 }
 
 /* Dark Theme */
@@ -39,6 +43,10 @@
   --heading-color: #e2e8f0;
   --subheading-color: #cbd5e0;
   --shadow-color: rgba(0, 0, 0, 0.3);
+  --bg-primary: #2d3748;
+  --bg-secondary: #353f50;
+  --bg-tertiary: #4a5568;
+  --border-color: #667185;
 }
 
 /* Apply theme variables */
@@ -56,7 +64,7 @@ body {
 header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   background-color: var(--header-bg);
   padding: 20px;
@@ -86,15 +94,34 @@ section {
   overflow-x: auto;
 }
 
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Database actions container */
+.db-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Buttons should have consistent height and margin */
 button {
   background-color: var(--button-bg);
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 8px 12px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  margin-left: 10px;
+  margin: 0;
+  white-space: nowrap;
+  height: 36px;
+  line-height: 1.2;
 }
 
 button:hover {
@@ -206,73 +233,6 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
-/* Actions container */
-.actions {
-  display: flex;
-  align-items: center;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  body {
-    padding: 10px;
-  }
-
-  header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .actions {
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    width: 100%;
-    gap: 10px;
-    margin-top: 10px;
-  }
-
-  button {
-    margin-left: 0;
-    margin-top: 5px;
-  }
-
-  h1 {
-    font-size: 20px;
-  }
-
-  h2 {
-    font-size: 16px;
-  }
-
-  section {
-    padding: 15px;
-  }
-
-  .result-panel {
-    padding: 10px;
-  }
-}
-
-@media (max-width: 480px) {
-  header {
-    padding: 15px;
-  }
-
-  .actions {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .theme-switch {
-    margin-bottom: 10px;
-  }
-
-  button {
-    width: 100%;
-    text-align: center;
-  }
-}
-
 /* Test controls - for better organizing many tests */
 .test-controls {
   display: flex;
@@ -375,4 +335,122 @@ input:checked + .slider:before {
   #testSearch {
     width: 100%;
   }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .db-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  button,
+  .db-controls button {
+    flex: 1;
+    text-align: center;
+    min-width: 120px;
+    margin-bottom: 5px;
+  }
+
+  .db-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  header {
+    padding: 15px;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .theme-switch {
+    margin-bottom: 10px;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  button,
+  .db-controls button {
+    width: 100% !important; /* Use !important to override any other styling */
+    margin-bottom: 5px;
+    min-width: 0;
+  }
+
+  .db-actions,
+  .db-controls {
+    width: 100%;
+    flex-direction: column;
+  }
+}
+
+/* Database viewer styles */
+#databaseSection {
+  margin-top: 2rem;
+}
+
+.db-controls {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.db-controls button {
+  /* Make sure these buttons have the same styling as header buttons */
+  background-color: var(--button-bg);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin: 0;
+  white-space: nowrap;
+  height: 36px;
+  line-height: 1.2;
+}
+
+.db-controls button:hover {
+  background-color: var(--button-hover);
+}
+
+.db-table-container {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.db-schema-table,
+.db-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.db-schema-table th,
+.db-data-table th {
+  background-color: var(--bg-tertiary);
+  text-align: left;
+  padding: 0.5rem;
+}
+
+.db-schema-table td,
+.db-data-table td {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.db-schema-table tr:nth-child(even),
+.db-data-table tr:nth-child(even) {
+  background-color: var(--bg-primary);
 }
