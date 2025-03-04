@@ -9,6 +9,7 @@
     "test": "cd backend && npm test"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "concurrently": "^7.6.0"
   }
 }
