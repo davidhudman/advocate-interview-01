@@ -1,6 +1,12 @@
 import express from 'express';
 import knex from 'knex';
 import knexConfig from '../../knexfile';
+import {
+  DbInfoResponse,
+  DbEnvironmentInfo,
+  SqliteTable,
+  SQLiteConnectionConfig,
+} from '../types/database';
 
 const router = express.Router();
 
@@ -11,7 +17,7 @@ router.get('/db-info', async (req, res) => {
     // If no specific environment is requested, show both databases
     if (!env) {
       const environments = ['prod', 'test'];
-      const result: any = {};
+      const result: DbInfoResponse = {};
 
       for (const environment of environments) {
         const connection = knex(knexConfig[environment]);
@@ -19,14 +25,20 @@ router.get('/db-info', async (req, res) => {
         try {
           const tables = await connection.raw("SELECT name FROM sqlite_master WHERE type='table'");
           const tableNames = tables
-            .map((t: any) => t.name)
+            .map((t: SqliteTable) => t.name)
             .filter((name: string) => name !== 'sqlite_sequence');
 
+          // Get connection filename safely
+          let filename: string;
+          const connectionConfig = knexConfig[environment].connection;
+          if (typeof connectionConfig === 'object' && connectionConfig !== null) {
+            filename = (connectionConfig as SQLiteConnectionConfig).filename;
+          } else {
+            filename = String(connectionConfig);
+          }
+
           result[environment] = {
-            filename:
-              typeof knexConfig[environment].connection === 'object'
-                ? (knexConfig[environment].connection as any).filename
-                : String(knexConfig[environment].connection),
+            filename,
             tables: {},
           };
 
@@ -51,21 +63,27 @@ router.get('/db-info', async (req, res) => {
       return res.json(result);
     }
 
-    // Single environment case (existing code)
+    // Single environment case
     const connection = knex(knexConfig[env]);
     console.log(`Fetching database info for environment: ${env}`);
 
     const tables = await connection.raw("SELECT name FROM sqlite_master WHERE type='table'");
     const tableNames = tables
-      .map((t: any) => t.name)
+      .map((t: SqliteTable) => t.name)
       .filter((name: string) => name !== 'sqlite_sequence');
 
-    const dbInfo: any = {
+    // Get connection filename safely
+    let filename: string;
+    const connectionConfig = knexConfig[env].connection;
+    if (typeof connectionConfig === 'object' && connectionConfig !== null) {
+      filename = (connectionConfig as SQLiteConnectionConfig).filename;
+    } else {
+      filename = String(connectionConfig);
+    }
+
+    const dbInfo: DbEnvironmentInfo = {
       environment: env,
-      filename:
-        typeof knexConfig[env].connection === 'object'
-          ? (knexConfig[env].connection as any).filename
-          : String(knexConfig[env].connection),
+      filename,
       tables: {},
     };
 
