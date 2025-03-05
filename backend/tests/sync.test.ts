@@ -141,4 +141,91 @@ describe('Sync Functionality', () => {
     expect(updatedUser.sync_status).toBe('pending');
     expect(updatedUser.crm_id).toBeNull();
   });
+
+  it('should update user via webhook with valid crm_id', async () => {
+    // Create a synced user with a crm_id
+    const userId = uuidv4();
+    await db('users').insert({
+      id: userId,
+      name: 'Webhook Test User',
+      email: `webhook-${timestamp}@synctest.com`,
+      phone: '111-222-6666',
+      sync_status: 'synced',
+      crm_id: 'CRM456',
+    });
+
+    // Send webhook update
+    const webhookPayload = {
+      crm_id: 'CRM456',
+      updated_fields: {
+        phone: '999-888-7777',
+      },
+      timestamp: '2023-10-15T12:00:00Z',
+    };
+
+    const response = await request(app).post('/webhook').send(webhookPayload);
+
+    // Verify response
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+
+    // Verify user was updated in DB
+    const updatedUser = await db('users').where({ id: userId }).first();
+    expect(updatedUser.phone).toBe('999-888-7777');
+    expect(updatedUser.last_updated).toContain('2023-10-15');
+
+    // Create a new test that just verifies the database update happened
+    // regardless of the specific date format
+    const count = await db('users')
+      .where({
+        id: userId,
+        phone: '999-888-7777',
+      })
+      .count('* as count');
+
+    expect(count[0].count).toBe(1);
+  });
+
+  it('should return 404 when webhook has non-existent crm_id', async () => {
+    // Send webhook update with non-existent CRM ID
+    const webhookPayload = {
+      crm_id: 'NON_EXISTENT_ID',
+      updated_fields: {
+        phone: '999-888-7777',
+      },
+      timestamp: '2023-10-15T12:00:00Z',
+    };
+
+    const response = await request(app).post('/webhook').send(webhookPayload);
+
+    // Verify response
+    expect(response.status).toBe(404);
+    expect(response.body.error).toContain('not found');
+  });
+
+  it('should return 400 when webhook is missing required fields', async () => {
+    // Missing crm_id
+    const invalidPayload1 = {
+      updated_fields: {
+        phone: '999-888-7777',
+      },
+      timestamp: '2023-10-15T12:00:00Z',
+    };
+
+    const response1 = await request(app).post('/webhook').send(invalidPayload1);
+
+    expect(response1.status).toBe(400);
+    expect(response1.body.error).toContain('crm_id');
+
+    // Missing updated_fields
+    const invalidPayload2 = {
+      crm_id: 'CRM456',
+      timestamp: '2023-10-15T12:00:00Z',
+    };
+
+    const response2 = await request(app).post('/webhook').send(invalidPayload2);
+
+    expect(response2.status).toBe(400);
+    expect(response2.body.error).toContain('updated_fields');
+  });
 });

@@ -148,6 +148,24 @@ No additional environment variables are required to run the application locally.
   - Updates their sync status based on results
   - Returns counts of successful and failed syncs
 
+### Webhook Endpoint
+
+- `POST /webhook` - Receive updates from the CRM system
+  - Accepts JSON payload with format:
+    ```json
+    {
+      "crm_id": "CRM123",
+      "updated_fields": {
+        "phone": "987-654-3210"
+      },
+      "timestamp": "2023-10-15T12:00:00Z"
+    }
+    ```
+  - Finds the user with the specified CRM ID
+  - Updates the user's fields with the provided values
+  - Updates the last_updated timestamp
+  - Returns 200 OK on success, 404 Not Found if user doesn't exist
+
 ## Testing the Application
 
 1. Open the frontend in your browser: http://localhost:8080
