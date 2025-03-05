@@ -1,5 +1,6 @@
 import request from 'supertest';
 import app from '../src/app';
+import { testSettings } from './testSettings';
 
 describe('CRM API Endpoints', () => {
   // Test token generation

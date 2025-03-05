@@ -2,6 +2,9 @@ import request from 'supertest';
 import app from '../src/app';
 import db from '../src/db';
 import { v4 as uuidv4 } from 'uuid';
+import { testSettings } from './testSettings';
+
+const timestamp = Date.now();
 
 describe('User Endpoints', () => {
   beforeAll(async () => {
@@ -9,13 +12,18 @@ describe('User Endpoints', () => {
     process.env.NODE_ENV = 'test';
 
     // Make sure migrations are up to date
-    await db.migrate.rollback();
-    await db.migrate.latest();
+    if (!testSettings.persistTestData) {
+      await db.migrate.rollback();
+      await db.migrate.latest();
+    }
   });
 
   afterEach(async () => {
-    // Clean up users table after each test
-    // await db('users').delete();
+    // Clean up users table after each test, but only if persistTestData is false
+    if (!testSettings.persistTestData) {
+      // Uncomment the line below to enable cleanup
+      await db('users').where('email', 'like', `%${timestamp}%`).delete();
+    }
   });
 
   afterAll(async () => {
@@ -25,9 +33,10 @@ describe('User Endpoints', () => {
 
   describe('POST /users', () => {
     it('should create a new user with valid data', async () => {
+      // unique timestamp for email
       const userData = {
         name: 'Jane Doe',
-        email: 'jane@example.com',
+        email: `jane-${timestamp}@example.com`,
         phone: '123-456-7890',
       };
 
@@ -83,7 +92,7 @@ describe('User Endpoints', () => {
       await db('users').insert({
         id: userId,
         name: 'Test User',
-        email: 'test@example.com',
+        email: `test-${timestamp}@example.com`,
         phone: '987-654-3210',
         sync_status: 'pending',
         crm_id: null,
@@ -95,7 +104,7 @@ describe('User Endpoints', () => {
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('id', userId);
       expect(response.body.name).toBe('Test User');
-      expect(response.body.email).toBe('test@example.com');
+      expect(response.body.email).toBe(`test-${timestamp}@example.com`);
     });
 
     it('should return 404 when user does not exist', async () => {

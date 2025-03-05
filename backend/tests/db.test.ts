@@ -1,5 +1,6 @@
 import db from '../src/db';
 import { Knex } from 'knex';
+import { testSettings } from './testSettings';
 
 let knex: Knex;
 
@@ -12,8 +13,11 @@ beforeAll(async () => {
   console.log('Running migrations...');
   try {
     // Make sure to rollback first to clear any existing data
-    await knex.migrate.rollback();
-    await knex.migrate.latest();
+    // Only do this if persistTestData is false
+    if (!testSettings.persistTestData) {
+      await knex.migrate.rollback();
+      await knex.migrate.latest();
+    }
     console.log('Migrations completed successfully');
 
     // Verify the table exists
@@ -27,10 +31,13 @@ beforeAll(async () => {
 
 afterAll(async () => {
   try {
-    // await knex.migrate.rollback(); // Keep this commented to preserve data
-    await knex.destroy(); // Uncomment this to fix the connection leak
+    // Only rollback if persistTestData is false
+    if (!testSettings.persistTestData) {
+      await knex.migrate.rollback(); // Keep this commented to preserve data
+    }
+    await knex.destroy(); // This should remain uncommented to close connections
   } catch (error) {
-    console.error('Error during test cleanup:', error);
+    console.error('Error during cleanup:', error);
   }
 });
 

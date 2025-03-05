@@ -11,6 +11,7 @@ This Express TypeScript API provides a robust foundation for building APIs with 
 - **Testing**: Full Jest test suite with visual test results
 - **Frontend Dashboard**: View test results, database data, and API health
 - **Mock CRM API**: Simulate a CRM API with OAuth2 authentication
+- **Data Synchronization**: Background syncing of users to the CRM API
 
 ## Project Structure
 
@@ -62,6 +63,12 @@ The application includes a built-in database viewer that allows you to:
 - Simulate a CRM system with OAuth2 authentication
 - Create and retrieve users in the mock CRM
 - Test integration with a third-party system
+
+### Data Synchronization
+
+- Sync users with the CRM system
+- Automatically update sync status and store CRM IDs
+- Manual sync trigger endpoint
 
 ## Getting Started
 
@@ -132,6 +139,14 @@ No additional environment variables are required to run the application locally.
   - Requires Authorization header: `Bearer mock_token`
   - Returns user details if found
   - Returns 404 if user does not exist
+
+### Sync Endpoints
+
+- `POST /sync` - Manually trigger the synchronization process
+  - Fetches all pending users
+  - Sends them to the CRM API
+  - Updates their sync status based on results
+  - Returns counts of successful and failed syncs
 
 ## Testing the Application
 
