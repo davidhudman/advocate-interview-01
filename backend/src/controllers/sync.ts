@@ -1,47 +1,29 @@
 import { Request, Response } from 'express';
 import db from '../db';
 import axios from 'axios';
-import { appSettings } from '../config/settings';
+import logger from '../utils/logger';
+import { retryWithBackoff } from '../utils/retry';
 
-// Helper function to fetch OAuth token
-async function getOAuthToken(): Promise<string | null> {
-  try {
-    // In a real app, we might get these from env vars
-    const response = await axios.post('http://localhost:3000/crm/token', {
-      client_id: 'dummy',
-      client_secret: 'dummy',
-    });
-
-    return response.data.access_token;
-  } catch (error) {
-    // Only log detailed error if enhanced logging is enabled
-    if (appSettings.enhancedLogging) {
-      console.log('Failed to get OAuth token:', error);
-    } else {
-      console.log('Failed to get OAuth token. Enable enhanced logging for details.');
-    }
-    return null;
-  }
+// Function to get OAuth token with retry
+async function getOAuthToken(): Promise<string> {
+  return retryWithBackoff(
+    async () => {
+      const response = await axios.post('http://localhost:3000/crm/token', {
+        client_id: 'dummy',
+        client_secret: 'dummy',
+      });
+      return response.data.access_token;
+    },
+    3,
+    1000,
+    'OAuth token retrieval',
+  );
 }
 
-// Main sync function to process pending users
-export async function syncPendingUsers(): Promise<{ success: number; failed: number }> {
-  // Get OAuth token
-  const token = await getOAuthToken();
-  if (!token) {
-    return { success: 0, failed: 0 };
-  }
-
-  // Fetch pending users
-  const pendingUsers = await db('users').where({ sync_status: 'pending' });
-
-  let successCount = 0;
-  let failedCount = 0;
-
-  // Process each user
-  for (const user of pendingUsers) {
-    try {
-      // Send user to CRM
+// Function to create user in CRM with retry
+async function createUserInCRM(user: any, token: string): Promise<string> {
+  return retryWithBackoff(
+    async () => {
       const response = await axios.post(
         'http://localhost:3000/crm/users',
         {
@@ -55,48 +37,99 @@ export async function syncPendingUsers(): Promise<{ success: number; failed: num
           },
         },
       );
-
-      // Update user with successful sync
-      await db('users').where({ id: user.id }).update({
-        sync_status: 'synced',
-        crm_id: response.data.crm_id,
-        last_updated: db.fn.now(),
-      });
-
-      successCount++;
-    } catch (error) {
-      // Update user with failed sync
-      await db('users').where({ id: user.id }).update({
-        sync_status: 'failed',
-        last_updated: db.fn.now(),
-      });
-
-      failedCount++;
-
-      // Only log detailed error if enhanced logging is enabled
-      if (appSettings.enhancedLogging) {
-        console.log(`Failed to sync user ${user.id}:`, error);
-      } else {
-        console.log(`Failed to sync user ${user.id}. Enable enhanced logging for details.`);
-      }
-    }
-  }
-
-  return { success: successCount, failed: failedCount };
+      return response.data.crm_id;
+    },
+    3,
+    1000,
+    `CRM user creation for ${user.email}`,
+  );
 }
 
-// Controller method for manual sync
+export const syncPendingUsers = async (): Promise<{ success: number; failed: number }> => {
+  let successCount = 0;
+  let failedCount = 0;
+
+  try {
+    // Get pending users
+    const pendingUsers = await db('users').where({ sync_status: 'pending' });
+
+    if (pendingUsers.length === 0) {
+      logger.info('No pending users to sync');
+      return { success: 0, failed: 0 };
+    }
+
+    logger.info(`Found ${pendingUsers.length} pending users to sync`);
+
+    // Get OAuth token - if this fails, we won't mark users as failed
+    // since we never actually attempted to sync them
+    let token;
+    try {
+      token = await getOAuthToken();
+    } catch (error) {
+      logger.error('Failed to obtain OAuth token, aborting sync', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      // Return early without marking any users as failed
+      return { success: 0, failed: 0 };
+    }
+
+    // Process each user only if we have a valid token
+    for (const user of pendingUsers) {
+      try {
+        // Create user in CRM
+        const crmId = await createUserInCRM(user, token);
+
+        // Update user in our DB
+        await db('users').where({ id: user.id }).update({
+          crm_id: crmId,
+          sync_status: 'synced',
+          last_updated: new Date().toISOString(),
+        });
+
+        successCount++;
+        logger.info(`Successfully synced user ${user.email} with CRM ID ${crmId}`);
+      } catch (error) {
+        failedCount++;
+        logger.error(`Failed to sync user ${user.email}`, {
+          userId: user.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+
+        // Update user status to failed
+        await db('users').where({ id: user.id }).update({
+          sync_status: 'failed',
+          last_updated: new Date().toISOString(),
+        });
+      }
+    }
+
+    return { success: successCount, failed: failedCount };
+  } catch (error) {
+    logger.error('Error in syncPendingUsers', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+};
+
 export const triggerSync = async (req: Request, res: Response): Promise<void> => {
   try {
+    logger.info('Sync manually triggered via API endpoint');
     const result = await syncPendingUsers();
 
     res.status(200).json({
-      message: 'Sync process completed',
+      message: 'Sync completed',
       synced: result.success,
       failed: result.failed,
     });
   } catch (error) {
-    console.error('Error during sync process:', error);
-    res.status(500).json({ error: 'Failed to complete sync process' });
+    logger.error('Error triggering sync', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+
+    res.status(500).json({
+      error: 'Failed to complete sync process',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 };

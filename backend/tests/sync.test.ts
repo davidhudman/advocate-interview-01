@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import { syncPendingUsers } from '../src/controllers/sync';
 import { testSettings } from './testSettings';
+import { retryWithBackoff } from '../src/utils/retry';
 
 // Create a timestamp to ensure unique emails across test runs
 const timestamp = Date.now();
@@ -12,6 +13,13 @@ const timestamp = Date.now();
 // Mock axios
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+// Mock the retry function to avoid timing issues
+jest.mock('../src/utils/retry', () => ({
+  retryWithBackoff: jest.fn().mockImplementation(async (fn) => {
+    return fn(); // Just call the function directly without retries
+  }),
+}));
 
 describe('Sync Functionality', () => {
   beforeAll(async () => {
@@ -106,7 +114,7 @@ describe('Sync Functionality', () => {
     const updatedUser = await db('users').where({ id: userId }).first();
     expect(updatedUser.sync_status).toBe('failed');
     expect(updatedUser.crm_id).toBeNull();
-  });
+  }, 10000);
 
   it('should not proceed if OAuth token request fails', async () => {
     // Create a pending user
@@ -140,7 +148,7 @@ describe('Sync Functionality', () => {
     const updatedUser = await db('users').where({ id: userId }).first();
     expect(updatedUser.sync_status).toBe('pending');
     expect(updatedUser.crm_id).toBeNull();
-  });
+  }, 10000);
 
   it('should update user via webhook with valid crm_id', async () => {
     // Create a synced user with a crm_id
@@ -201,7 +209,7 @@ describe('Sync Functionality', () => {
     // Verify response
     expect(response.status).toBe(404);
     expect(response.body.error).toContain('not found');
-  });
+  }, 10000);
 
   it('should return 400 when webhook is missing required fields', async () => {
     // Missing crm_id

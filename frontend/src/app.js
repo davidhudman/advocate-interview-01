@@ -1,5 +1,7 @@
 // Theme configuration - change this value to set the default theme
 const DEFAULT_THEME = "light"; // options: 'light' or 'dark'
+// Test details configuration - set to false to hide details by default
+const SHOW_TEST_DETAILS_DEFAULT = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   const backendUrl = "http://localhost:3000";
@@ -19,6 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentTestData = null;
   let lastViewedDb = null;
+  let showTestDetails =
+    localStorage.getItem("showTestDetails") === "true" ||
+    SHOW_TEST_DETAILS_DEFAULT;
 
   // View all databases
   viewAllDbButton.addEventListener("click", () => {
@@ -77,6 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize theme on page load
   initializeTheme();
+  initializeTestDetailsToggle();
 
   // Handle theme toggle changes
   themeToggle.addEventListener("change", () => {
@@ -148,6 +154,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Add to the beginning of the file, with other UI setup
+  function initializeTestDetailsToggle() {
+    const testDetailsToggle = document.getElementById("testDetailsToggle");
+    if (testDetailsToggle) {
+      testDetailsToggle.checked = showTestDetails;
+      testDetailsToggle.addEventListener("change", () => {
+        showTestDetails = testDetailsToggle.checked;
+        localStorage.setItem("showTestDetails", showTestDetails);
+        // Rerender test results if we have them
+        if (currentTestData) {
+          displayTestResults(currentTestData);
+        }
+      });
+    }
+  }
+
   // Run tests
   document.getElementById("runTests").addEventListener("click", async () => {
     try {
@@ -164,12 +186,33 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (response.ok) {
-        // After running tests, fetch the results file
-        const testResultsResponse = await fetch("/test-results.json");
-        const testData = await testResultsResponse.json();
+        const result = await response.json();
 
-        currentTestData = testData; // Store the test data for filtering
-        displayTestResults(testData);
+        if (result.testOutput) {
+          // Handle the simplified output format
+          const formattedOutput = `<pre>${result.testOutput}</pre>`;
+          const statusClass = result.success ? "success" : "error";
+
+          testResults.innerHTML = `
+            <p class="${statusClass}">
+              Tests ${result.success ? "passed" : "failed"}
+            </p>
+            <div class="test-error-container">
+              <button class="details-toggle" onclick="toggleDetails('test-output-details')">
+                ${showTestDetails ? "Hide" : "Show"} Details
+              </button>
+              <div id="test-output-details" class="test-error ${
+                showTestDetails ? "" : "hidden"
+              }">
+                ${formattedOutput}
+              </div>
+            </div>
+          `;
+        } else if (result.testResults) {
+          // Handle the original format if still available
+          currentTestData = result.testResults;
+          displayTestResults(result.testResults);
+        }
       } else {
         testResults.innerHTML = `
           <p class="error">Error running tests: ${response.statusText}</p>
@@ -220,9 +263,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Display error message if the suite failed
       if (suite.status === "failed" && suite.message) {
+        // Add toggle button for details
+        const detailsId = `details-${suite.name.replace(/[^a-zA-Z0-9]/g, "-")}`;
+
         html += `
-          <div class="test-error">
-            <pre>${suite.message}</pre>
+          <div class="test-error-container">
+            <button class="details-toggle" onclick="toggleDetails('${detailsId}')" style="color: white !important;">
+              ${showTestDetails ? "Hide" : "Show"} Details
+            </button>
+            <div id="${detailsId}" class="test-error ${
+          showTestDetails ? "" : "hidden"
+        }">
+              <pre>${suite.message}</pre>
+            </div>
           </div>
         `;
       }
@@ -231,6 +284,33 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     html += "</div></div>";
+
+    // Add the toggle details function if it doesn't exist already
+    if (!window.toggleDetails) {
+      window.toggleDetails = function (id) {
+        const element = document.getElementById(id);
+        const isHidden = element.classList.contains("hidden");
+        const button = element.previousElementSibling;
+
+        // Toggle visibility
+        if (isHidden) {
+          element.classList.remove("hidden");
+          // Find the button and update text and active state
+          if (button && button.classList.contains("details-toggle")) {
+            button.textContent = "Hide Details";
+            button.classList.add("active");
+          }
+        } else {
+          element.classList.add("hidden");
+          // Find the button and update text and active state
+          if (button && button.classList.contains("details-toggle")) {
+            button.textContent = "Show Details";
+            button.classList.remove("active");
+          }
+        }
+      };
+    }
+
     testResults.innerHTML = html;
   }
 

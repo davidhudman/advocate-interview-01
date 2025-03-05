@@ -19,6 +19,7 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
     const { error, value } = webhookSchema.validate(req.body);
 
     if (error) {
+      // Return the specific validation error message
       res.status(400).json({ error: error.details[0].message });
       return;
     }
@@ -29,7 +30,7 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
     const user = await db('users').where({ crm_id }).first();
 
     if (!user) {
-      res.status(404).json({ error: `User with CRM ID ${crm_id} not found` });
+      res.status(404).json({ error: 'User not found' });
       return;
     }
 
@@ -41,9 +42,10 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
         last_updated: timestamp,
       });
 
+    // Include both the success field and the message
     res.status(200).json({
       success: true,
-      message: `User with CRM ID ${crm_id} updated successfully`,
+      message: 'User updated successfully',
     });
   } catch (error) {
     console.error('Error handling webhook:', error);

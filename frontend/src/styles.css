@@ -484,3 +484,78 @@ input:checked + .slider:before {
     width: 100%;
   }
 }
+
+/* Add these styles to styles.css if they're not already included or if not using inline styles */
+.hidden {
+  display: none;
+}
+
+/* Update the details-toggle styling to match other buttons */
+.details-toggle {
+  margin: 5px 0;
+  padding: 6px 12px;
+  background-color: var(--button-bg);
+  color: white !important;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure text and inner elements are always white */
+.details-toggle,
+.details-toggle * {
+  color: white !important;
+}
+
+.details-toggle:hover {
+  background-color: var(--button-hover);
+}
+
+/* Override any parent container text colors */
+.test-error-container .details-toggle,
+.error .details-toggle,
+.test-case.failed .details-toggle {
+  color: white !important;
+}
+
+/* Rotate the arrow when details are shown */
+.details-toggle.active::before {
+  transform: rotate(90deg);
+}
+
+/* Style the error container better */
+.test-error-container {
+  margin: 10px 0;
+  border-left: 3px solid var(--button-bg);
+  padding-left: 12px;
+  background-color: var(--bg-secondary);
+  border-radius: 0 4px 4px 0;
+}
+
+/* Add some styling to test errors */
+.test-error {
+  padding: 8px;
+  border-radius: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Add a subtle scroll track */
+.test-error::-webkit-scrollbar {
+  width: 6px;
+}
+
+.test-error::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.test-error::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 3px;
+}

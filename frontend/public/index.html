@@ -17,6 +17,16 @@
           </label>
           <span class="theme-label">Dark Mode</span>
         </div>
+
+        <!-- Add the test details toggle switch -->
+        <div class="test-details-switch">
+          <label class="switch">
+            <input type="checkbox" id="testDetailsToggle" />
+            <span class="slider round"></span>
+          </label>
+          <span class="theme-label">Show Test Details</span>
+        </div>
+
         <button id="runTests">Run Tests</button>
         <button id="checkHealth">Check Health</button>
 
@@ -72,4 +82,27 @@
 
     <script src="../src/app.js"></script>
   </body>
+
+  <!-- Add CSS for the hidden class -->
+  <style>
+    .hidden {
+      display: none;
+    }
+
+    .details-toggle {
+      margin: 5px 0;
+      padding: 3px 8px;
+      background-color: var(--button-bg);
+      color: var(--button-text);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .test-details-switch {
+      display: flex;
+      align-items: center;
+      margin-right: 15px;
+    }
+  </style>
 </html>
