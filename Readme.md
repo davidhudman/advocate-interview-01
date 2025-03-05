@@ -23,6 +23,18 @@ The application uses SQLite databases:
 - **Prod Database**: Main database for application data (`./prod.sqlite3`)
 - **Test Database**: Isolated database for running tests (`./test.sqlite3`)
 
+### User Table
+
+The application manages user data with the following fields:
+
+- `id`: UUID primary key
+- `name`: User's full name
+- `email`: Unique email address
+- `phone`: Contact phone number
+- `sync_status`: One of 'pending', 'synced', or 'failed'
+- `crm_id`: Optional ID for external CRM integration
+- `last_updated`: Timestamp of last update
+
 ## Features
 
 ### Database Viewer
@@ -78,9 +90,23 @@ The application supports two database environments:
 
 No additional environment variables are required to run the application locally.
 
-## Endpoints
+## API Endpoints
+
+### Health Endpoints
 
 - `GET /health` - Returns server health status
+
+### User Endpoints
+
+- `POST /users` - Create a new user
+
+  - Required fields: name, email, phone
+  - Validates email format
+  - Returns the created user with a 201 status code
+
+- `GET /users/:id` - Get user by ID
+  - Returns the user if found with a 200 status code
+  - Returns a 404 error if user does not exist
 
 ## Testing the Application
 
