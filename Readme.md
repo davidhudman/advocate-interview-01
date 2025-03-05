@@ -10,6 +10,7 @@ This Express TypeScript API provides a robust foundation for building APIs with 
 - **Database Integration**: SQLite with Knex.js query builder
 - **Testing**: Full Jest test suite with visual test results
 - **Frontend Dashboard**: View test results, database data, and API health
+- **Mock CRM API**: Simulate a CRM API with OAuth2 authentication
 
 ## Project Structure
 
@@ -55,6 +56,12 @@ The application includes a built-in database viewer that allows you to:
 
 - Monitor API health status
 - Quick health verification
+
+### Mock CRM API
+
+- Simulate a CRM system with OAuth2 authentication
+- Create and retrieve users in the mock CRM
+- Test integration with a third-party system
 
 ## Getting Started
 
@@ -107,6 +114,24 @@ No additional environment variables are required to run the application locally.
 - `GET /users/:id` - Get user by ID
   - Returns the user if found with a 200 status code
   - Returns a 404 error if user does not exist
+
+### Mock CRM API Endpoints
+
+- `POST /crm/token` - Generate an OAuth2 token
+
+  - Request body: `{ "client_id": "dummy", "client_secret": "dummy" }`
+  - Returns: `{ "access_token": "mock_token", "expires_in": 3600 }`
+
+- `POST /crm/users` - Create a user in the CRM system
+
+  - Requires Authorization header: `Bearer mock_token`
+  - Request body: `{ "name": "Jane", "email": "jane@example.com", "phone": "123-456-7890" }`
+  - Returns: `{ "crm_id": "CRM123" }`
+
+- `GET /crm/users/:crmId` - Get a user from the CRM system by ID
+  - Requires Authorization header: `Bearer mock_token`
+  - Returns user details if found
+  - Returns 404 if user does not exist
 
 ## Testing the Application
 

@@ -4,6 +4,7 @@ import healthRoutes from './routes/health';
 import testRoutes from './routes/tests';
 import debugRoutes from './routes/debug';
 import userRoutes from './routes/users';
+import crmRoutes from './routes/crm';
 
 const app = express();
 
@@ -13,5 +14,6 @@ app.use('/health', healthRoutes);
 app.use('/run-tests', testRoutes);
 app.use('/debug', debugRoutes);
 app.use('/users', userRoutes);
+app.use('/crm', crmRoutes);
 
 export default app;
