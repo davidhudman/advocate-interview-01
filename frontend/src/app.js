@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const testSearch = document.getElementById("testSearch");
   const testStatusFilter = document.getElementById("testStatusFilter");
   const testSummary = document.getElementById("testSummary");
-  const viewDbInfoButton = document.getElementById("viewDbInfo");
   const viewAllDbButton = document.getElementById("viewAllDb");
   const viewProdDbButton = document.getElementById("viewProdDb");
   const viewTestDbButton = document.getElementById("viewTestDb");
@@ -20,12 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentTestData = null;
   let lastViewedDb = null;
-
-  // Add event listener for the DB Info button
-  viewDbInfoButton.addEventListener("click", () => {
-    // Open the database info endpoint in a new tab
-    window.open(`${backendUrl}/debug/db-info`, "_blank");
-  });
 
   // View all databases
   viewAllDbButton.addEventListener("click", () => {
@@ -196,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let html = "<div>";
 
     if (testData.numFailedTestSuites === 0) {
-      html += `<p class="success">All tests passed! (${testData.numPassedTestSuites} tests</p>`;
+      html += `<p class="success">All tests passed! (${testData.numPassedTestSuites} tests)</p>`;
     } else {
       html += `
         <p class="error">
