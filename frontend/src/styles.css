@@ -470,7 +470,7 @@ input:checked + .slider:before {
   width: 0%;
   border-radius: 4px;
   transition: width 0.5s;
-  animation: progress-animation 12s infinite ease-in-out;
+  animation: progress-animation 25s infinite ease-in-out;
 }
 
 @keyframes progress-animation {
