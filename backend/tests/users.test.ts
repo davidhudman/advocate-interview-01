@@ -9,7 +9,7 @@ const timestamp = Date.now();
 describe('User Endpoints', () => {
   beforeAll(async () => {
     // Set NODE_ENV to test explicitly to ensure we use the test database
-    process.env.NODE_ENV = 'test';
+    // process.env.NODE_ENV = 'test';
 
     // Make sure migrations are up to date
     if (!testSettings.persistTestData) {

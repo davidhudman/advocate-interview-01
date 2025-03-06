@@ -83,7 +83,6 @@ export const syncPendingUsers = async (): Promise<{ success: number; failed: num
         await db('users').where({ id: user.id }).update({
           crm_id: crmId,
           sync_status: 'synced',
-          last_updated: new Date().toISOString(),
         });
 
         successCount++;
@@ -98,7 +97,6 @@ export const syncPendingUsers = async (): Promise<{ success: number; failed: num
         // Update user status to failed
         await db('users').where({ id: user.id }).update({
           sync_status: 'failed',
-          last_updated: new Date().toISOString(),
         });
       }
     }

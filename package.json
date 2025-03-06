@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "setup-db": "cd backend && npm run setup-db",
     "start:backend": "cd backend && npm run dev",
     "start:frontend": "cd frontend && npm start",
     "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",

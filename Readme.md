@@ -2,6 +2,52 @@
 
 A simple Express.js server built with TypeScript and a frontend to display test results.
 
+## Getting Started
+
+1. Install dependencies:
+
+   ```
+   npm run install:all
+   ```
+
+2. Set up the database (test is default):
+
+   ```
+   NODE_ENV=test npm run setup-db
+   ```
+
+   or
+
+   ```
+   NODE_ENV=prod npm run setup-db
+   ```
+
+3. Start the application (both backend and frontend) (test env is default):
+
+   ```
+   NODE_ENV=test npm start
+   ```
+
+   or
+
+   ```
+   NODE_ENV=prod npm start
+   ```
+
+   - Backend will run on: http://localhost:3000
+   - Frontend will run on: http://localhost:8080
+
+4. Access the dashboard at http://localhost:8080 (or your configured port)
+
+## Environment Configuration
+
+The application supports two database environments:
+
+- `prod`: Default environment for regular operation
+- `test`: Used during test execution
+
+No additional environment variables are required to run the application locally.
+
 ## Project Overview
 
 This Express TypeScript API provides a robust foundation for building APIs with TypeScript and Express. The project includes:
@@ -70,40 +116,6 @@ The application includes a built-in database viewer that allows you to:
 - Automatically update sync status and store CRM IDs
 - Manual sync trigger endpoint
 
-## Getting Started
-
-1. Install dependencies:
-
-   ```
-   npm run install:all
-   ```
-
-2. Set up the database:
-
-   ```
-   cd backend && npm run setup-db
-   ```
-
-3. Start the application (both backend and frontend):
-
-   ```
-   npm start
-   ```
-
-   - Backend will run on: http://localhost:3000
-   - Frontend will run on: http://localhost:8080
-
-4. Access the dashboard at http://localhost:8080 (or your configured port)
-
-## Environment Configuration
-
-The application supports two database environments:
-
-- `prod`: Default environment for regular operation
-- `test`: Used during test execution
-
-No additional environment variables are required to run the application locally.
-
 ## API Endpoints
 
 ### Health Endpoints
@@ -171,3 +183,28 @@ No additional environment variables are required to run the application locally.
 1. Open the frontend in your browser: http://localhost:8080
 2. Click "Check Health" to verify the backend is working
 3. Click "Run Tests" to execute the test suite and see results
+
+## Error Handling and Resilience
+
+This application implements robust error handling and retry mechanisms to ensure reliable operation:
+
+### Retry Logic
+
+- API requests to the CRM system automatically retry up to 3 times with exponential backoff when failures occur
+- Initial retry after 1 second, with subsequent retries doubling the wait time
+- Complete logging of all retry attempts and their outcomes
+
+### Structured Logging
+
+- Winston-based logging system for all application events
+- Detailed contextual information in log entries
+- Log levels properly used to categorize information, warnings, and errors
+- Logs stored in both combined and error-specific files:
+  - `backend/logs/combined.log`: Contains all log entries
+  - `backend/logs/error.log`: Contains only error-level entries
+
+### Error Responses
+
+- Meaningful error messages returned to clients
+- Appropriate HTTP status codes used for different error scenarios
+- Detailed error logging for debugging purposes

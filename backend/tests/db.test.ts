@@ -6,7 +6,7 @@ let knex: Knex;
 
 beforeAll(async () => {
   // Set NODE_ENV to test explicitly to ensure we use the test config
-  process.env.NODE_ENV = 'test';
+  // process.env.NODE_ENV = 'test';
   knex = db;
 
   // Log more information about migrations
@@ -64,7 +64,6 @@ async function inspectDatabase() {
 
 describe('Database Initialization', () => {
   it('should have a users table', async () => {
-    await inspectDatabase();
     const exists = await knex.schema.hasTable('users');
     console.log(`Test - Users table exists: ${exists}`);
     expect(exists).toBe(true);
@@ -102,8 +101,6 @@ describe('Database Initialization', () => {
         expect(`Failed to insert user with status ${status}: ${errorMessage}`).toBeFalsy();
       }
     }
-
-    await inspectDatabase();
   });
 
   it('should allow crm_id to be nullable', async () => {
@@ -132,7 +129,5 @@ describe('Database Initialization', () => {
       }
       expect(`Failed to insert user with nullable crm_id: ${errorMessage}`).toBeFalsy();
     }
-
-    await inspectDatabase();
   });
 });
