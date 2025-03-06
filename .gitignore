@@ -27,3 +27,5 @@ frontend/public/test-results.json
 # OS files
 .DS_Store
 Thumbs.db
+*.sqlite3
+*.log

@@ -10,7 +10,7 @@ const webhookSchema = Joi.object({
     name: Joi.string().optional(),
     email: Joi.string().email().optional(),
   }).required(),
-  timestamp: Joi.string().isoDate().optional(),
+  timestamp: Joi.string().isoDate().required(),
 });
 
 export const handleWebhook = async (req: Request, res: Response): Promise<void> => {
@@ -24,7 +24,7 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const { crm_id, updated_fields } = value;
+    const { crm_id, updated_fields, timestamp } = value;
 
     // Find user with the given crm_id
     const user = await db('users').where({ crm_id }).first();
@@ -34,11 +34,15 @@ export const handleWebhook = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
+    // convert timestampp to format 2025-03-06 17:24:11
+    const formattedTimestamp = new Date(timestamp).toISOString().replace('T', ' ').substring(0, 19);
+
     // Update user with the provided fields
     await db('users')
       .where({ crm_id })
       .update({
         ...updated_fields,
+        last_updated: formattedTimestamp,
       });
 
     // Include both the success field and the message

@@ -208,3 +208,107 @@ This application implements robust error handling and retry mechanisms to ensure
 - Meaningful error messages returned to clients
 - Appropriate HTTP status codes used for different error scenarios
 - Detailed error logging for debugging purposes
+
+## Using the API
+
+Here are some examples of how to interact with the API using curl:
+
+### Health Check
+
+```bash
+curl http://localhost:3000/health
+```
+
+### User Management
+
+Create a timestamp variable to make emails unique:
+
+```bash
+TIMESTAMP=$(date +%s)
+```
+
+Create a new user with timestamp in email:
+
+```bash
+curl -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" \
+  -d "{\"name\": \"John Doe\", \"email\": \"john-${TIMESTAMP}@example.com\", \"phone\": \"123-456-7890\"}"
+```
+
+or if you want to set the USER_ID variable
+
+```bash
+USER_ID=$(curl -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" \
+  -d "{\"name\": \"John Doe\", \"email\": \"john-${TIMESTAMP}@example.com\", \"phone\": \"123-456-7890\"}" | jq -r '.id')
+
+echo "USER_ID: $USER_ID"
+```
+
+Get a user by ID (replace USER_ID with an actual uuid if not set):
+
+```bash
+curl http://localhost:3000/users/$USER_ID
+```
+
+### Mock CRM API
+
+Generate an OAuth2 token:
+
+```bash
+TOKEN=$(curl -X POST http://localhost:3000/crm/token -H "Content-Type: application/json" -d '{"client_id": "dummy", "client_secret": "dummy"}' | jq -r '.access_token')
+
+echo "TOKEN: $TOKEN"
+```
+
+Create a user in the CRM system (using the token in the previous step and a timestamp variable to make emails unique)
+
+```bash
+TIMESTAMP=$(date +%s)
+CRM_ID=$(curl -X POST http://localhost:3000/crm/users \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{\"name\": \"Jane\", \"email\": \"jane-${TIMESTAMP}@example.com\", \"phone\": \"987-654-3210\"}" \
+  | jq -r '.crm_id')
+
+echo "CRM_ID: $CRM_ID"
+```
+
+Get a user from the CRM system by ID:
+
+```bash
+curl http://localhost:3000/crm/users/$CRM_ID -H "Authorization: Bearer $TOKEN"
+```
+
+### Sync Endpoints
+
+Trigger a manual sync of pending users to CRM:
+
+```bash
+curl -X POST http://localhost:3000/sync
+```
+
+Send webhook update from CRM:
+
+```bash
+# 1. Create a user in your main system first
+TIMESTAMP=$(date +%s)
+USER_ID=$(curl -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" \
+  -d "{\"name\": \"John Doe\", \"email\": \"john-${TIMESTAMP}@example.com\", \"phone\": \"123-456-7890\"}" \
+  | jq -r '.id')
+
+echo "USER_ID: $USER_ID"
+
+# 2. Sync this user to the CRM system
+curl -X POST http://localhost:3000/sync
+
+# 3. Now you can update this user via webhook (get the CRM_ID first)
+CRM_ID=$(curl http://localhost:3000/users/$USER_ID | jq -r '.crm_id')
+echo "CRM_ID: $CRM_ID"
+
+# 4. Send the webhook update
+curl -X POST http://localhost:3000/webhook \
+  -H "Content-Type: application/json" \
+  -d "{\"crm_id\": \"$CRM_ID\", \"updated_fields\": {\"phone\": \"555-123-4567\"}, \"timestamp\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"}"
+```
