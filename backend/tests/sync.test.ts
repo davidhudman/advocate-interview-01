@@ -3,9 +3,7 @@ import app from '../src/app';
 import db from '../src/db';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
-import { syncPendingUsers } from '../src/controllers/sync';
 import { testSettings } from './testSettings';
-import { retryWithBackoff } from '../src/utils/retry';
 
 // Create a timestamp to ensure unique emails across test runs
 const timestamp = Date.now();

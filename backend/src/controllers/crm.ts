@@ -1,7 +1,14 @@
 import { Request, Response } from 'express';
 
+interface CRMUser {
+  crmId: string;
+  name: string;
+  email: string;
+  phone: string;
+}
+
 // In-memory storage for mock CRM users
-const crmUsers: Record<string, any> = {};
+const crmUsers: Record<string, CRMUser> = {};
 let userCounter = 1;
 
 // Generate an OAuth2 token
