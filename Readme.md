@@ -50,6 +50,15 @@ No additional environment variables are required to run the application locally.
 
 ## Project Overview
 
+This application demonstrates a bidirectional integration flow with a CRM system:
+
+1. Users are created in the main application database first
+2. A sync process (manually triggered via `/sync` endpoint) pushes pending users to the CRM system
+3. The CRM system can send updates back via a webhook endpoint
+4. The webhook automatically updates the user data in the main database
+
+This flow represents a real-world integration pattern where your application maintains the source of truth while staying synchronized with an external system. The integration is bidirectional but semi-automated - changes from your system to the CRM require manual triggering, while changes from the CRM back to your system happen automatically via webhooks.
+
 This Express TypeScript API provides a robust foundation for building APIs with TypeScript and Express. The project includes:
 
 - **Express Backend**: Built with TypeScript for type safety
